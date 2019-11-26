@@ -10,6 +10,16 @@ class RunningData {
         this.data.shift(); // ignore this point
     }
 
+    getSample(length) {
+        if (length > this.data.length) {
+            return this.data;
+        } else {
+            let end = this.data.length;
+            let start = end - length;
+            return this.data.slice(start, end);
+        }
+    }
+
 }
 
 module.exports = {

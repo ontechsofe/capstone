@@ -3,15 +3,14 @@
   "version": "1.0.0",
   "main": "main.js",
   "scripts": {
-    "start": "node ./src/app.js"
+    "start": "node ./src/app.js",
+    "interface": "electron ./interface/main.js"
   },
   "dependencies": {
-    "@neurosity/pipes": "^3.2.3",
     "@openbci/cyton": "^2.0.1",
-    "@openbci/utilities": "^1.0.0",
-    "eeg-pipes": "^2.0.3",
-    "rxjs": "^6.5.3",
-    "socket.io": "^2.3.0"
+    "socket.io": "^2.3.0",
+    "chart.js": "^2.9.2",
+    "socket.io-client": "latest"
   },
   "devDependencies": {
     "electron": "^7.1.1",

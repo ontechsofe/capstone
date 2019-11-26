@@ -1,5 +1,7 @@
 const {Packet} = require("./Packet");
 
+// Custom wrapper class on the packet to remove any
+// non-essential data (speed-up processing)
 class PacketFactory {
     constructor() {
         this._channelData = [];

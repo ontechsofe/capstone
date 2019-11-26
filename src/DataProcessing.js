@@ -1,12 +1,11 @@
-// File full of promise chain processing of a packet
+const {DataProcessing, padHex} = require("./Extras");
 
-/**
- * TODO: USE THIS REPO TO MODEL SOME OF THE PROCESSING
- * https://github.com/neurosity/eeg-pipes/blob/master/src/pipes/filtering/bandpassFilter.js
- *
- */
+let dataProcessing =  new DataProcessing();
 
-// start the processing
+const applyFilters = (packet) => new Promise(((resolve, reject) => {
+    packet.channelData = dataProcessing.process(packet.channelData);
+    resolve(packet);
+}));
 
 const voltsToMicrovolts = (packet) => new Promise(((resolve, reject) => {
     packet.channelData = packet.channelData.map(volt => Math.pow(10, 6) * volt);
@@ -18,18 +17,17 @@ const normalize = (min, max) => (packet) => new Promise(((resolve, reject) => {
     resolve(packet);
 }));
 
-const padHex = (hexString) => `${"0".repeat(6 - hexString.length)}${hexString}`;
 const toHex = (packet) => new Promise(((resolve, reject) => {
     packet.channelData = packet.channelData.map(normalized => {
-        let pre_hex = Math.floor(Math.pow(256, 3) * normalized);
+        let pre_hex = Math.floor(Math.pow(256, 1) * normalized);
         let hexString = pre_hex.toString(16);
         return padHex(hexString);
     });
     resolve(packet);
 }));
-
 module.exports = {
     voltsToMicrovolts,
     normalize,
-    toHex
+    toHex,
+    applyFilters
 };

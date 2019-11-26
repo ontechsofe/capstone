@@ -1,10 +1,21 @@
-
+// here lies a couple of wrappers for applying operations on an array
 const arrMax = arr => Math.max(...arr);
 const arrMin = arr => Math.min(...arr);
 const arrSum = arr => arr.reduce((a, b) => a + b, 0);
-const arrMean = arr => arrSum(arr) / arr.length;
-const arrStd = arr => Math.sqrt(arrMean(arr.map(v => Math.pow(v - arrMean(arr), 2))));
+const arrAvg = arr => arrSum(arr) / arr.length;
+const arrStd = arr => Math.sqrt(arrAvg(arr.map(v => Math.pow(v - arrAvg(arr), 2))));
+const normalize = (min, max) => uV => (uV - min) / (max - min);
+const padHex = hexString => `${"0".repeat(6 - hexString.length)}${hexString}`;
+const toHex = v => {
+    // commented-out lines are for generating a greyscale image
+    let pre_hex = Math.floor((Math.pow(256, 3) - 1) * v);
+    // let pre_hex = Math.floor((Math.pow(256, 1) - 1) * v);
+    let hexString = pre_hex.toString(16);
+    return padHex(hexString);
+    // return `${hexString}${hexString}${hexString}`
+};
 
+// Apply a filter to a set given the co-eff's
 const filterIIR = (filt_b, filt_a, data) => {
     let Nback = filt_b.length;
     let prev_y = new Array(Nback);
@@ -25,6 +36,7 @@ const filterIIR = (filt_b, filt_a, data) => {
         prev_y[0] = out;
         data[i] = out;
     }
+    return data;
 };
 
 class RunningMean {
@@ -39,7 +51,7 @@ class RunningMean {
     }
 
     calcMean() {
-        return arrMean(this.values);
+        return arrAvg(this.values);
     }
 }
 
@@ -70,19 +82,23 @@ class FilterConstants {
         for (let i = 0; i < this.a.length; i++) {
             this.a[i] = a_given[i];
         }
+        // this is ignored in the interface... for now
         this.name_given = name_given;
         this.short_name_given = short_name_given;
     }
 }
 
 class DataProcessing {
+    // Class from the official OpenBCI GUI for applying filters to the data...
+    // this will be moved to use the fili npm package for coeff generation and
+    // the actual application of the filters.
     constructor(NCHAN, sample_rate_Hz) {
         this.N_FILT_CONFIGS = 5;
         this.filtCoeff_bp = new Array(this.N_FILT_CONFIGS);
         this.N_NOTCH_CONFIGS = 3;
         this.filtCoeff_notch = new Array(this.N_NOTCH_CONFIGS);
-        this.currentFilt_ind = 3;
-        this.currentNotch_ind = 0;
+        this.currentFilt_ind = 3; // Current Bandpass filter is 5-50Hz
+        this.currentNotch_ind = 0; // current notch filter is 60Hz as 2nd order Butterworth
         this.processing_band_low_Hz = [1, 4, 8, 13, 30];
         this.processing_band_high_Hz = [4, 8, 13, 30, 55];
         this.nchan = NCHAN;
@@ -95,6 +111,7 @@ class DataProcessing {
         this.defineFilters();
     }
 
+    // prepare all of the coeff for the data
     defineFilters() {
         let n_filt; // int
         let b, a, b2, a2; // Arrays
@@ -274,7 +291,6 @@ class DataProcessing {
                             a = [1, -3.78412985599134, 5.39377521548486, -3.43287342581222, 0.823349595537562];
                             break;
                         default:
-                            println("EEG_Processing: *** ERROR *** Filters can only work at 125Hz, 200Hz, 250 Hz, 1000Hz or 1600Hz");
                             b = [1.0];
                             a = [1.0];
                     }
@@ -325,26 +341,26 @@ class DataProcessing {
         }
     }
 
-    process(data_newest_uV, data_long_uV, data_forDisplay_uV, fftData) {
-        let Nfft = getNfftSafe();
+    // actually apply the filter to a data set
+    process(data_forDisplay_uV) {
         for (let Ichan = 0; Ichan < this.nchan; Ichan++) {
-            filterIIR(this.filtCoeff_notch[this.currentNotch_ind].b, this.filtCoeff_notch[this.currentNotch_ind].a, data_forDisplay_uV[Ichan]);
-            filterIIR(this.filtCoeff_bp[this.currentFilt_ind].b, this.filtCoeff_bp[this.currentFilt_ind].a, data_forDisplay_uV[Ichan]);
-            let fooData_filt = dataBuffY_filtY_uV[Ichan];
-            fooData_filt = Arrays.copyOfRange(fooData_filt, fooData_filt.length-(this.fs_Hz), fooData_filt.length);   //just grab the most recent second of data
-            this.data_std_uV[Ichan]=arrStd(fooData_filt);
+            data_forDisplay_uV[Ichan] = filterIIR(this.filtCoeff_notch[this.currentNotch_ind].b, this.filtCoeff_notch[this.currentNotch_ind].a, data_forDisplay_uV[Ichan]);
+            data_forDisplay_uV[Ichan] = filterIIR(this.filtCoeff_bp[this.currentFilt_ind].b, this.filtCoeff_bp[this.currentFilt_ind].a, data_forDisplay_uV[Ichan]);
         }
-
+        return data_forDisplay_uV;
     }
 }
 
 module.exports = {
+    padHex,
     arrMax,
     arrMin,
     arrSum,
-    arrMean,
+    arrAvg,
     arrStd,
+    normalize,
     filterIIR,
+    toHex,
     RunningMean,
     DataProcessing
 };

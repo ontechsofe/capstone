@@ -4,7 +4,7 @@ const Cyton = require("@openbci/cyton");
 const cytonBoardOptions = {
     verbose: true,
     debug: false,
-    simulate: true
+    simulate: false
 };
 const theBoard = new Cyton(cytonBoardOptions);
 
@@ -40,6 +40,11 @@ class CytonBoard {
         theBoard.on("sample", (sample) => {
             callback(PacketFactory.fromSample(sample));
         });
+        theBoard.on('rawDataPacket', (data) => {
+            // maybe switch to completely independent data processing?
+            // console.log(data);
+            // console.log(utilities.transformRawDataPacketToSample(data));
+        });
         theBoard
             .listPorts()
             .then(ports => {
@@ -61,7 +66,6 @@ class CytonBoard {
 
     boardReady() {
         console.log("Ready!");
-        console.log(theBoard);
         theBoard.streamStart().then(() => {
             console.log("Streaming...");
         }).catch(err => {
