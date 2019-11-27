@@ -1,3 +1,5 @@
+from __future__ import absolute_import, division, print_function, unicode_literals
+
 import signal
 import sys
 import os
@@ -10,9 +12,13 @@ from io import BytesIO
 from time import time
 from pandas import DataFrame
 
+import tensorflow as tf
+from tensorflow.keras.models import Sequential, load_model
+
 sio = Client()
 data = []
 label = []
+model = load_model('first_model.h5')
 
 def signal_handler(sig, frame):
     global sio
@@ -24,6 +30,14 @@ def signal_handler(sig, frame):
 def disconnect(d):
     global sio
     sio.disconnect()
+
+@sio.on('predict')
+def predict(d):
+    global model, sio
+    formatted = array(Image.open(BytesIO(b64decode(d))))
+    prediction = model.predict(formatted)
+    print(prediction)
+    sio.emit('send_prediction', { 'prediction': prediction })
 
 @sio.on('label')
 def store_labelled(d):
