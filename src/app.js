@@ -16,6 +16,11 @@ let THE_DATA_FLAG = false;
 let THE_SAVE_FLAG = false;
 let THE_DISCONNECT_FLAG = false;
 
+let THE_STREAM_FLAG = false;
+
+let THE_PREDICTION_FLAG = false;
+let THE_PREDICTION_DATA = null;
+
 function connection(socket) {
     console.log('new_INTERFACE_CONNECTED:', socket.client.id);
     setInterval(() => {
@@ -26,9 +31,20 @@ function connection(socket) {
             socket.emit('image-data', turnDataIntoColours());
         }
     }, 50);
+    setInterval(() => {
+        if (THE_PREDICTION_FLAG) {
+            THE_PREDICTION_FLAG = false;
+            socket.emit('give prediction', THE_PREDICTION_DATA);
+        }
+    }, 0);
     socket.on('image', (b64data) => {
-        THE_DATA = b64data;
-        THE_DATA_FLAG = true;
+        if (b64data.label === "PRE") {
+            THE_DATA = b64data;
+            THE_STREAM_FLAG = true;
+        } else {
+            THE_DATA = b64data;
+            THE_DATA_FLAG = true;
+        }
     });
     socket.on('send-save', () => {
         THE_SAVE_FLAG = true;
@@ -56,11 +72,18 @@ mlio.on('connection', (socket) => {
         if (THE_DISCONNECT_FLAG) {
             THE_DISCONNECT_FLAG = false;
             socket.emit('disc', false);
-
+        }
+        if (THE_STREAM_FLAG) {
+            THE_STREAM_FLAG = false;
+            socket.emit('predict', THE_DATA);
         }
     }, 0);
     socket.on('disconnect', () => {
         console.log(socket.client.id, 'has committed seppuku :O')
+    })
+    socket.on('send_prediction', (data) => {
+        THE_PREDICTION_FLAG = true;
+        THE_PREDICTION_DATA = data;
     })
 });
 

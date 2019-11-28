@@ -7,7 +7,9 @@ class RunningData {
 
     newDataPoint(val) {
         this.data.push(val);
-        this.data.shift(); // ignore this point
+        if (this.data.length > this.n) {
+            this.data.shift(); // ignore this point
+        }
     }
 
     getSample(length) {
