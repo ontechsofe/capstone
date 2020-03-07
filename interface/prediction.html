@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Prediction</title>
+    <script src="https://cdn.jsdelivr.net/npm/p5@0.10.2/lib/p5.js"></script>
+    <script>
+        if (typeof module === 'object') {
+            window.module = module;
+            module = undefined;
+        }
+    </script>
+    <script>
+        if (window.module) module = window.module;
+    </script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body>
+<script>
+    const electron = require("electron");
+    const {
+        remote,
+        ipcRenderer
+    } = electron;
+
+    const arrSum = arr => arr.reduce((a, b) => a + b, 0);
+    const arrAvg = arr => arrSum(arr) / arr.length;
+
+    let c = {
+        w: 0,
+        h: 0
+    };
+
+    class RunningData {
+        constructor(size) {
+            this.n = size;
+            this.data = new Array(this.n);
+        }
+
+        newDataPoint(val) {
+            this.data.push(val);
+            if (this.data.length > this.n) {
+                this.data.shift();
+            }
+        }
+
+        getSample(length) {
+            if (length > this.data.length) {
+                return this.data;
+            } else {
+                let end = this.data.length;
+                let start = end - length;
+                return this.data.slice(start, end);
+            }
+        }
+
+        getAverage() {
+            return arrAvg(this.data);
+        }
+    }
+
+    function makePrediction(val) {
+        if (val >= 0.7) {
+            // focused
+            return "HAS TO PEE";
+        } else if (val <= 0.3) {
+            // relaxed
+            return "NO PEE";
+        } else if (val <= 0.5) {
+            // slight relax
+            return "SOME PEE";
+        } else if (val > 0.5) {
+            // slight focus
+            return "KINDA PEE";
+        }
+    }
+
+    function makeFocusPrediction(val) {
+        if (val >= 0.7) {
+            // focused
+            return "FOCUSED";
+        } else if (val <= 0.3) {
+            // relaxed
+            return "RELAXED";
+        } else if (val <= 0.5) {
+            // slight relax
+            return "SLIGHTLY RELAXED";
+        } else if (val > 0.5) {
+            // slight focus
+            return "SLIGHTLY FOCUSED";
+        }
+    }
+
+    function makeTempPrediction(val) {
+        if (val >= 0.7) {
+            return "HOT";
+        } else if (val <= 0.3) {
+            return "COLD";
+        } else if (val <= 0.5) {
+            return "SLIGHTLY COLD";
+        } else if (val > 0.5) {
+            return "SLIGHTLY HOT";
+        }
+    }
+
+    function makeStressPrediction(val) {
+        if (val >= 0.7) {
+            return "STRESS";
+        } else if (val <= 0.3) {
+            return "NOT STRESS";
+        } else if (val <= 0.5) {
+            return "NOT REALLY STRESSED";
+        } else if (val > 0.5) {
+            return "KINDA STRESSED";
+        }
+    }
+
+    function makeHungerPrediction(val) {
+        if (val >= 0.7) {
+            return "HUNGRY";
+        } else if (val <= 0.3) {
+            return "NOT HUNGRY";
+        } else if (val <= 0.5) {
+            return "NOT REALLY HUNGRY";
+        } else if (val > 0.5) {
+            return "KINDA HUNGRY";
+        }
+    }
+
+    function makePainPrediction(val) {
+        if (val >= 0.7) {
+            return "PAIN";
+        } else if (val <= 0.3) {
+            return "NOT PAIN";
+        } else if (val <= 0.5) {
+            return "NOT REALLY PAIN";
+        } else if (val > 0.5) {
+            return "KINDA PAIN";
+        }
+    }
+
+    const dataPast = new RunningData(8);
+
+    function setup() {
+        createCanvas(windowWidth, windowHeight);
+        rectMode(CENTER);
+        ellipseMode(CENTER);
+        textAlign(CENTER, CENTER);
+    }
+
+    function windowResized() {
+        resizeCanvas(windowWidth, windowHeight);
+    }
+
+    function draw() {
+        c.w = width / 2;
+        c.h = height / 2;
+        background(10, 10, 10);
+        noStroke();
+        push();
+        fill(80);
+        rect(c.w, c.h - 40, 60, 50, 40);
+        fill(125);
+        rect(c.w, c.h -140, 100, 200, 40);
+        pop();
+        stroke(0);
+        fill(255, 255, 255);
+        ellipse(c.w, c.h - 200, 180, 180);
+        fill(255, 255, 0, (dataPast.getAverage() * 255));
+        ellipse(c.w, c.h - 200, 180, 180);
+        fill(255);
+        textSize(48);
+        let d = (dataPast.getSample(1)[0] ? dataPast.getSample(1)[0] : 0).toFixed(4);
+        let avg = dataPast.getAverage().toFixed(4);
+        text(`${makePrediction(dataPast.getAverage())}`, c.w, c.h + 50);
+        textSize(32);
+        text(`Current: ${d}`, c.w, c.h + 100);
+        text(`Average: ${avg}`, c.w, c.h + 150);
+    }
+
+    ipcRenderer.on('give prediction', (event, arg) => {
+        // dataPast.newDataPoint(arg.prediction);
+        console.log(arg);
+        console.log(`[PREDICTION]
+        pee: ${arg.pee_prediction.toFixed(5)} | ${makePrediction(arg.pee_prediction)}
+        focus: ${arg.focus_prediction.toFixed(5)} | ${makeFocusPrediction(arg.focus_prediction)}
+        temp: ${arg.temperature_prediction.toFixed(5)} | ${makeTempPrediction(arg.temperature_prediction)}
+        stress: ${arg.stress_prediction.toFixed(5)} | ${makeStressPrediction(arg.stress_prediction)}
+        hunger: ${arg.hunger_prediction.toFixed(5)} | ${makeHungerPrediction(arg.hunger_prediction)}
+        pain: ${arg.pain_prediction.toFixed(5)} | ${makePainPrediction(arg.pain_prediction)}
+        `)
+    });
+</script>
+</body>
+</html>

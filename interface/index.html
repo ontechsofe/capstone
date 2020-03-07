@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Debugging and Data Collection Interface</title>
+  <script src="https://www.chartjs.org/dist/2.9.2/Chart.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/p5@0.10.2/lib/p5.js"></script>
+  <script>
+      if (typeof module === 'object') {
+          window.module = module;
+          module = undefined;
+      }
+  </script>
+  <script>
+      if (window.module) module = window.module;
+  </script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+    }
+  </style>
+</head>
+<body>
+<canvas id="chart" width="1000" height="400"></canvas>
+<div id="sketch-holder"></div>
+<script>
+    const pxs_width = 1;
+    const pxs_height = 40;
+    const dev = false;
+    const electron = require("electron");
+    const {
+        remote,
+        ipcRenderer
+    } = electron;
+
+    let data = [];
+    let chartData = [];
+    let myChart;
+    let ctx;
+
+    function generateLabels(N) {
+        return new Array(N).fill(0).map((e, i) => `${-N + i}`)
+    }
+
+    function setup() {
+        let canvas = createCanvas(320 * pxs_width, 8 * pxs_height);
+        canvas.parent('sketch-holder');
+        background(255, 255, 255);
+        ctx = document.getElementById('chart').getContext('2d');
+        myChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: generateLabels(320),
+                datasets: [{
+                    label: "Channel 1",
+                    borderColor: "#7c4b8d",
+                    data: [],
+                    fill: false
+                }, {
+                    label: "Channel 2",
+                    borderColor: "#818181",
+                    data: [],
+                    fill: false
+                }, {
+                    label: "Channel 3",
+                    borderColor: "#317159",
+                    data: [],
+                    fill: false
+                }, {
+                    label: "Channel 4",
+                    borderColor: "#36579e",
+                    data: [],
+                    fill: false
+                }, {
+                    label: "Channel 5",
+                    borderColor: "#fd5e34",
+                    data: [],
+                    fill: false
+                }, {
+                    label: "Channel 6",
+                    borderColor: "#ddb20d",
+                    data: [],
+                    fill: false
+                }, {
+                    label: "Channel 7",
+                    borderColor: "#e0382d",
+                    data: [],
+                    fill: false
+                }, {
+                    label: "Channel 8",
+                    borderColor: "#a25231",
+                    data: [],
+                    fill: false
+                }]
+            },
+            options: {
+                responsive: true,
+                title: {
+                    display: true,
+                    text: "OpenBCI Headset Cyton Board"
+                },
+                scales: {
+                    yAxes: [{
+                        display: true,
+                        scaleLabel: {
+                            display: true,
+                            labelString: "uVolts"
+                        }
+                    }]
+                }
+            }
+        });
+    }
+
+    function splitDataByChannel() {
+        let ret = {};
+        chartData.forEach((time, i) => {
+            time.forEach((channel, channelIndex) => {
+                if (!Array.isArray(ret[channelIndex])) {
+                    ret[channelIndex] = [];
+                }
+                ret[channelIndex].push(channel);
+            });
+        });
+        return ret;
+    }
+
+    function draw() {
+        for (let i = 0; i < data.length; i++) {
+            for (let j = 0; j < data[i].length; j++) {
+                fill(`#${data[i][j]}`);
+                noStroke();
+                rect(j * pxs_width, i * pxs_height, pxs_width, pxs_height);
+            }
+        }
+        let d = splitDataByChannel();
+        myChart.data.datasets.forEach((dataset, i) => {
+            dataset.data = d[i];
+        });
+        myChart.update(0);
+    }
+
+    ipcRenderer.on('graph-sample', (event, arg) => {
+        chartData = arg.map(e => e._channelData);
+    });
+
+    ipcRenderer.on('image-data', (event, arg) => {
+        data = arg;
+    });
+
+    ipcRenderer.on('give-image', (event, arg) => {
+        let canvas = document.getElementById('defaultCanvas0');
+        let b64data = canvas.toDataURL('image/png').replace(/data:image\/png;base64,/, '');
+        ipcRenderer.send('got-image', {
+            label: arg.label,
+            data: b64data
+        })
+    });
+
+</script>
+</body>
+</html>
