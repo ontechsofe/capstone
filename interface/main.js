@@ -13,6 +13,9 @@ const socket = io.connect("http://localhost:12345/", {
     reconnection: true
 });
 
+let x = 0;
+let y = 0;
+
 let ready = false;
 
 let STREAM_DATA_FLAG = false;
@@ -68,35 +71,67 @@ function createWindow() {
         });
         child.loadFile('./prediction.html');
         child.once('ready-to-show', () => {
-           child.show();
+            child.show();
         });
         child.on('closed', function () {
             child = null;
         });
     });
 
-    globalShortcut.register('CommandOrControl+s', () => {
+    globalShortcut.register('CommandOrControl+t', () => {
         console.log("TOGGLE STREAM =>", !STREAM_DATA_FLAG);
         STREAM_DATA_FLAG = !STREAM_DATA_FLAG;
     });
 
-    globalShortcut.register('num0', () => {
-        console.log("FOCUSED (FOC)");
-        mainWindow.webContents.send('give-image', {label: "FOC"});
+    let interval = null;
+
+    [
+        {
+            key: 'num0',
+            label: 'HUN'
+        }
+    ].forEach(e => {
+        globalShortcut.register(e.key, () => {
+            console.log(`[SEND] (${e.label}) ${++y}`);
+            mainWindow.webContents.send('give-image', {label: e.label});
+        });
+
+        globalShortcut.register(`CommandOrControl+${e.key}`, () => {
+            console.log(`[TOGL] (${e.label})`);
+            if (interval === null) {
+                interval = setInterval(() => {
+                    console.log(`[SEND] (${e.label}) ${++y}`);
+                    mainWindow.webContents.send('give-image', {label: e.label});
+                }, 1000 + (500 - (Math.random() * 1000)))
+            } else {
+                clearInterval(interval);
+                interval = null;
+            }
+        });
     });
 
-    globalShortcut.register('num1', () => {
-        console.log("RELAXED (REL)");
-        mainWindow.webContents.send('give-image', {label: "REL"});
+    globalShortcut.register('CommandOrControl+r', () => {
+        x = 0;
+        y = 0;
+        console.log(`RESET COUNTS`);
     });
 
-    globalShortcut.register('Space', () => {
-        console.log("SAVE DATA");
+    globalShortcut.register('CommandOrControl+q', () => {
+        console.clear();
+    });
+
+    globalShortcut.register('CommandOrControl+s', () => {
+        console.log("[SAVE] SAVE DATA");
         socket.emit('send-save', true);
     });
 
+    globalShortcut.register('CommandOrControl+z', () => {
+        console.log("[SAVE] SAVE PREDICTION");
+        socket.emit('send-predict-save', true);
+    });
+
     globalShortcut.register('CommandOrControl+Space', () => {
-        console.log("FORCE DISCONNECT");
+        console.log("[NOPE] FORCE DISCONNECT");
         socket.emit('send-disconnect', true);
     });
 

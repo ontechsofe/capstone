@@ -14,6 +14,7 @@ let THE_DATA = "";
 let THE_DATA_FLAG = false;
 
 let THE_SAVE_FLAG = false;
+let THE_SAVE_PREDICTION_FLAG = false;
 let THE_DISCONNECT_FLAG = false;
 
 let THE_STREAM_FLAG = false;
@@ -49,6 +50,9 @@ function connection(socket) {
     socket.on('send-save', () => {
         THE_SAVE_FLAG = true;
     });
+    socket.on('send-predict-save', () => {
+        THE_SAVE_PREDICTION_FLAG = true;
+    });
     socket.on('send-disconnect', () => {
         THE_DISCONNECT_FLAG = true;
     });
@@ -69,18 +73,26 @@ mlio.on('connection', (socket) => {
             THE_SAVE_FLAG = false;
             socket.emit('save_data', false);
         }
+        if (THE_SAVE_PREDICTION_FLAG) {
+            THE_SAVE_PREDICTION_FLAG = false;
+            console.log('SAVING PREDICTIONS');
+            socket.emit('save_predictions', false);
+        }
         if (THE_DISCONNECT_FLAG) {
             THE_DISCONNECT_FLAG = false;
             socket.emit('disc', false);
         }
         if (THE_STREAM_FLAG) {
             THE_STREAM_FLAG = false;
-            socket.emit('predict', THE_DATA);
+            socket.emit('predict', {
+                name: 'MARCUS',
+                data: THE_DATA.data
+            });
         }
     }, 0);
     socket.on('disconnect', () => {
         console.log(socket.client.id, 'has committed seppuku :O')
-    })
+    });
     socket.on('send_prediction', (data) => {
         THE_PREDICTION_FLAG = true;
         THE_PREDICTION_DATA = data;

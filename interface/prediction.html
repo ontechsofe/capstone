@@ -68,6 +68,22 @@
     function makePrediction(val) {
         if (val >= 0.7) {
             // focused
+            return "HAS TO PEE";
+        } else if (val <= 0.3) {
+            // relaxed
+            return "NO PEE";
+        } else if (val <= 0.5) {
+            // slight relax
+            return "SOME PEE";
+        } else if (val > 0.5) {
+            // slight focus
+            return "KINDA PEE";
+        }
+    }
+
+    function makeFocusPrediction(val) {
+        if (val >= 0.7) {
+            // focused
             return "FOCUSED";
         } else if (val <= 0.3) {
             // relaxed
@@ -78,6 +94,54 @@
         } else if (val > 0.5) {
             // slight focus
             return "SLIGHTLY FOCUSED";
+        }
+    }
+
+    function makeTempPrediction(val) {
+        if (val >= 0.7) {
+            return "HOT";
+        } else if (val <= 0.3) {
+            return "COLD";
+        } else if (val <= 0.5) {
+            return "SLIGHTLY COLD";
+        } else if (val > 0.5) {
+            return "SLIGHTLY HOT";
+        }
+    }
+
+    function makeStressPrediction(val) {
+        if (val >= 0.7) {
+            return "STRESS";
+        } else if (val <= 0.3) {
+            return "NOT STRESS";
+        } else if (val <= 0.5) {
+            return "NOT REALLY STRESSED";
+        } else if (val > 0.5) {
+            return "KINDA STRESSED";
+        }
+    }
+
+    function makeHungerPrediction(val) {
+        if (val >= 0.7) {
+            return "HUNGRY";
+        } else if (val <= 0.3) {
+            return "NOT HUNGRY";
+        } else if (val <= 0.5) {
+            return "NOT REALLY HUNGRY";
+        } else if (val > 0.5) {
+            return "KINDA HUNGRY";
+        }
+    }
+
+    function makePainPrediction(val) {
+        if (val >= 0.7) {
+            return "PAIN";
+        } else if (val <= 0.3) {
+            return "NOT PAIN";
+        } else if (val <= 0.5) {
+            return "NOT REALLY PAIN";
+        } else if (val > 0.5) {
+            return "KINDA PAIN";
         }
     }
 
@@ -121,7 +185,16 @@
     }
 
     ipcRenderer.on('give prediction', (event, arg) => {
-        dataPast.newDataPoint(arg.prediction);
+        // dataPast.newDataPoint(arg.prediction);
+        console.log(arg);
+        console.log(`[PREDICTION]
+        pee: ${arg.pee_prediction.toFixed(5)} | ${makePrediction(arg.pee_prediction)}
+        focus: ${arg.focus_prediction.toFixed(5)} | ${makeFocusPrediction(arg.focus_prediction)}
+        temp: ${arg.temperature_prediction.toFixed(5)} | ${makeTempPrediction(arg.temperature_prediction)}
+        stress: ${arg.stress_prediction.toFixed(5)} | ${makeStressPrediction(arg.stress_prediction)}
+        hunger: ${arg.hunger_prediction.toFixed(5)} | ${makeHungerPrediction(arg.hunger_prediction)}
+        pain: ${arg.pain_prediction.toFixed(5)} | ${makePainPrediction(arg.pain_prediction)}
+        `)
     });
 </script>
 </body>
