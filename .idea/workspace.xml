@@ -149,6 +149,10 @@
     <option name="LAST_COMMIT_MESSAGE" value="minor changes, adding prediction interface" />
   </component>
   <component name="WindowStateProjectService">
+    <state x="1014" y="62" width="869" height="989" key="CommitChangelistDialog2" timestamp="1583619222233">
+      <screen x="54" y="27" width="1866" height="1053" />
+    </state>
+    <state x="1014" y="62" width="869" height="989" key="CommitChangelistDialog2/54.27.1866.1053@54.27.1866.1053" timestamp="1583619222233" />
     <state x="770" y="311" width="424" height="491" key="FileChooserDialogImpl" timestamp="1583179095190">
       <screen x="54" y="27" width="1866" height="1053" />
     </state>
@@ -173,6 +177,14 @@
       <screen x="54" y="27" width="1866" height="1053" />
     </state>
     <state x="311" y="133" width="1322" height="792" key="SettingsEditor/54.27.1866.1053@54.27.1866.1053" timestamp="1580391361873" />
+    <state x="1048" y="271" width="800" height="572" key="Vcs.Push.Dialog.v2" timestamp="1583619215826">
+      <screen x="54" y="27" width="1866" height="1053" />
+    </state>
+    <state x="1048" y="271" width="800" height="572" key="Vcs.Push.Dialog.v2/54.27.1866.1053@54.27.1866.1053" timestamp="1583619215826" />
+    <state x="1264" y="211" width="358" height="697" key="com.intellij.openapi.vcs.changes.SpecificFilesViewDialog" timestamp="1583619199952">
+      <screen x="54" y="27" width="1866" height="1053" />
+    </state>
+    <state x="1264" y="211" width="358" height="697" key="com.intellij.openapi.vcs.changes.SpecificFilesViewDialog/54.27.1866.1053@54.27.1866.1053" timestamp="1583619199952" />
     <state x="610" y="268" width="921" height="610" key="find.popup" timestamp="1583612333888">
       <screen x="54" y="27" width="1866" height="1053" />
     </state>

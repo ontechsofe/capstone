@@ -1,0 +1,22 @@
+{
+  "name": "cyton_board",
+  "version": "1.0.0",
+  "main": "main.js",
+  "scripts": {
+    "start": "node ./app.js"
+  },
+  "dependencies": {
+    "@openbci/cyton": "^2.0.1",
+    "chart.js": "^2.9.2",
+    "i2c-bus": "^5.1.0",
+    "onoff": "^5.0.1",
+    "serialport": "^8.0.6",
+    "socket.io": "^2.3.0",
+    "socket.io-client": "latest",
+    "spi-device": "^3.0.0"
+  },
+  "devDependencies": {
+    "electron": "^7.1.10",
+    "electron-rebuild": "^1.8.6"
+  }
+}
