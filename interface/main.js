@@ -135,6 +135,11 @@ function createWindow() {
         socket.emit('send-disconnect', true);
     });
 
+    globalShortcut.register('CommandOrControl+v', () => {
+        console.log("[PAIN] SENDING PAIN");
+        socket.emit('send-pain', true);
+    });
+
     ipcMain.on('got-image', (event, arg) => {
         socket.emit('image', arg);
     });
