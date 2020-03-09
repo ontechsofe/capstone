@@ -16,6 +16,7 @@ let THE_DATA_FLAG = false;
 let THE_SAVE_FLAG = false;
 let THE_SAVE_PREDICTION_FLAG = false;
 let THE_DISCONNECT_FLAG = false;
+let THE_PAIN_FLAG = false;
 
 let THE_STREAM_FLAG = false;
 
@@ -53,6 +54,9 @@ function connection(socket) {
     socket.on('send-predict-save', () => {
         THE_SAVE_PREDICTION_FLAG = true;
     });
+    socket.on('send-pain', () => {
+        THE_PAIN_FLAG = true;
+    });
     socket.on('send-disconnect', () => {
         THE_DISCONNECT_FLAG = true;
     });
@@ -85,9 +89,13 @@ mlio.on('connection', (socket) => {
         if (THE_STREAM_FLAG) {
             THE_STREAM_FLAG = false;
             socket.emit('predict', {
-                name: 'MARCUS',
+                name: 'JOSH',
                 data: THE_DATA.data
             });
+        }
+        if (THE_PAIN_FLAG) {
+            THE_PAIN_FLAG = false;
+            socket.emit('receive_pain', false);
         }
     }, 0);
     socket.on('disconnect', () => {

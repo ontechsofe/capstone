@@ -48,6 +48,7 @@ class CytonBoard {
         theBoard
             .listPorts()
             .then(ports => {
+                console.log(ports);
                 theBoard.connect(ports[0].comName).catch((err) => {
                     console.log('ERROR');
                     console.log(err);
