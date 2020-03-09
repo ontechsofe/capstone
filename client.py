@@ -2,7 +2,10 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 import signal
 import sys
-import os
+
+if len(sys.argv) != 2:
+    print("[USAGE] python client.py <server-ip>")
+    sys.exit(0)
 
 from socketio import Client
 from base64 import b64decode
@@ -11,9 +14,7 @@ from PIL import Image
 from io import BytesIO
 from time import time
 from pandas import DataFrame
-
-import tensorflow as tf
-from tensorflow.keras.models import Sequential, load_model
+from tensorflow.keras.models import load_model
 
 sio = Client()
 
@@ -38,22 +39,25 @@ predictions = {
     'hunger_prediction': []
 }
 
+
 def signal_handler(sig, frame):
     global sio
     sio.disconnect()
     print('You have disconnected!')
     sys.exit(0)
 
+
 @sio.on('disc')
 def disconnect(d):
     global sio
     sio.disconnect()
 
+
 @sio.on('predict')
 def predict(d):
     global focus_model, pee_model, temperature_model, stress_model, pain_model, hunger_model, sio, predictions
     formatted = array(Image.open(BytesIO(b64decode(d['data']))))
-    formatted = array([array([array([y[:-1]/255 for y in x]) for x in formatted])])
+    formatted = array([array([array([y[:-1] / 255 for y in x]) for x in formatted])])
     # formatted = array([array([y[:, :-1]/255 for y in x]) for x in ])
     focus_prediction = float(focus_model.predict(formatted)[0][0])
     pee_prediction = float(pee_model.predict(formatted)[0][0])
@@ -75,7 +79,7 @@ def predict(d):
     print(f'PAIN LEVEL: {pain_prediction}')
     print(f'HUNGER LEVEL: {hunger_prediction}')
     print("------------------------------------------------")
-    response =  { 
+    response = {
         'focus_prediction': focus_prediction,
         'pee_prediction': pee_prediction,
         'temperature_prediction': temperature_prediction,
@@ -90,6 +94,7 @@ def predict(d):
         predictions[key].append(value)
     print(len(predictions['name']))
     sio.emit('send_prediction', response)
+
 
 @sio.on('save_predictions')
 def save_predictions(d):
@@ -108,7 +113,8 @@ def save_predictions(d):
         print(f"Saved as {save_path}")
     except Exception:
         print(f"Woops saving predictions didn't work!")
-    
+
+
 @sio.on('label')
 def store_labelled(d):
     global labelled_data
@@ -120,15 +126,16 @@ def store_labelled(d):
         print(f"Total {label} Data: {len(data)}")
     print("------------------------------------------------")
 
+
 @sio.on('save_data')
 def save_data(d):
     global labelled_data
     for label, data in labelled_data.items():
         try:
-            df = DataFrame({ 
+            df = DataFrame({
                 "data": data,
                 "label": [label] * len(data)
-                })
+            })
             save_path = f"data/{label}{int(time())}.csv"
             df.to_csv(save_path)
             print(f"Saved {label} data as {save_path}")
@@ -136,11 +143,13 @@ def save_data(d):
         except Exception:
             print(f"Woops saving {label} didn't work!")
 
+
 @sio.on('receive_pain')
 def receive_pain(d):
     global pain_times
     print(f"[RECEIVED] Pain {int(time())}")
-    pain_times.append(int(time()));
+    pain_times.append(int(time()))
+
 
 ip = f'http://{sys.argv[1]}:5555'
 print(ip)
@@ -148,5 +157,3 @@ sio.connect(ip)
 print('You are connected!')
 print(f'Your sid is: {sio.sid}')
 signal.signal(signal.SIGINT, signal_handler)
-
-# 192.168.69.423
