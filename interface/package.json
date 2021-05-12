@@ -7,7 +7,7 @@
   },
   "dependencies": {
     "@openbci/cyton": "^2.0.1",
-    "chart.js": "^2.9.2",
+    "chart.js": "^2.9.4",
     "i2c-bus": "^5.1.0",
     "onoff": "^5.0.1",
     "serialport": "^8.0.6",
