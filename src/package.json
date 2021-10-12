@@ -16,7 +16,7 @@
     "spi-device": "^3.0.0"
   },
   "devDependencies": {
-    "electron": "^7.1.10",
+    "electron": "^11.5.0",
     "electron-rebuild": "^1.8.6"
   }
 }
