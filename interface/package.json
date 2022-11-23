@@ -11,7 +11,7 @@
     "i2c-bus": "^5.1.0",
     "onoff": "^5.0.1",
     "serialport": "^8.0.6",
-    "socket.io": "^2.3.0",
+    "socket.io": "^2.5.0",
     "socket.io-client": "latest",
     "spi-device": "^3.0.0"
   },
